@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nothing Health API — Developer Documentation</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface-2: #1e1e1e;
+            --border: #2a2a2a;
+            --text: #e5e5e5;
+            --text-secondary: #999;
+            --accent: #fff;
+            --red: #ff4444;
+            --green: #4ade80;
+            --blue: #60a5fa;
+            --yellow: #fbbf24;
+            --purple: #a78bfa;
+            --code-bg: #1a1a1a;
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 32px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .sidebar-logo {
+            padding: 0 24px 32px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .sidebar-logo h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .sidebar-logo span {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .sidebar nav { padding: 0 12px; }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            background: var(--surface-2);
+        }
+
+        .nav-link.active {
+            color: var(--accent);
+            background: var(--surface-2);
+        }
+
+        /* Main content */
+        .main {
+            margin-left: 280px;
+            flex: 1;
+            max-width: 900px;
+            padding: 48px 64px 120px;
+        }
+
+        /* Typography */
+        h2 {
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+            padding-top: 48px;
+        }
+
+        h2:first-child { padding-top: 0; }
+
+        h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 15px;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: var(--mono);
+        }
+
+        .badge-get { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+        .badge-post { background: rgba(96, 165, 250, 0.15); color: var(--blue); }
+        .badge-delete { background: rgba(255, 68, 68, 0.15); color: var(--red); }
+
+        /* Code */
+        code {
+            font-family: var(--mono);
+            font-size: 13px;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 16px 0 24px;
+            overflow-x: auto;
+            line-height: 1.7;
+        }
+
+        pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 13px;
+        }
+
+        .comment { color: #666; }
+        .string { color: var(--green); }
+        .keyword { color: var(--purple); }
+        .url { color: var(--blue); }
+
+        /* Endpoint cards */
+        .endpoint {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 16px 0;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .endpoint-path {
+            font-family: var(--mono);
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .endpoint-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        td code {
+            font-size: 13px;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        /* Callouts */
+        .callout {
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 16px 0 24px;
+            font-size: 14px;
+        }
+
+        .callout p { margin: 0; font-size: 14px; }
+
+        .callout-info {
+            background: rgba(96, 165, 250, 0.08);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .callout-warning {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .callout-title {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        /* Scope list */
+        .scope-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 16px 0 24px;
+        }
+
+        .scope-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        .scope-name {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--green);
+            margin-bottom: 4px;
+        }
+
+        .scope-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Divider */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 48px 0;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 32px 24px; }
+            .scope-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h1>Nothing Health</h1>
+                <span>Developer API</span>
+            </div>
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-section-title">Getting Started</div>
+                    <a href="#overview" class="nav-link active">Overview</a>
+                    <a href="#quickstart" class="nav-link">Quickstart</a>
+                    <a href="#authentication" class="nav-link">Authentication</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">API Reference</div>
+                    <a href="#heart-rate" class="nav-link">Heart Rate</a>
+                    <a href="#sleep" class="nav-link">Sleep</a>
+                    <a href="#spo2" class="nav-link">SpO2</a>
+                    <a href="#steps" class="nav-link">Steps</a>
+                    <a href="#workouts" class="nav-link">Workouts</a>
+                    <a href="#profile" class="nav-link">Profile</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Guides</div>
+                    <a href="#scopes" class="nav-link">Scopes & Permissions</a>
+                    <a href="#rate-limits" class="nav-link">Rate Limits</a>
+                    <a href="#data-freshness" class="nav-link">Data Freshness</a>
+                    <a href="#app-review" class="nav-link">App Review</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <!-- Overview -->
+            <section id="overview">
+                <h2>Nothing Health API</h2>
+                <p class="hero-subtitle">
+                    Access health and fitness data from Nothing watches. Build dashboards,
+                    AI coaching tools, research integrations, and more — with user consent
+                    and scoped permissions.
+                </p>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">Base URL</div>
+                    <p><code>https://api.nothing.tech/v1</code></p>
+                </div>
+
+                <h3>What you can build</h3>
+                <p>
+                    The Nothing Health API provides read access to health metrics collected
+                    by Nothing watches. Common use cases include:
+                </p>
+                <ul style="color: var(--text-secondary); margin: 0 0 24px 20px; font-size: 15px; line-height: 2;">
+                    <li>Health dashboards and data visualization</li>
+                    <li>AI-powered fitness coaching and insights</li>
+                    <li>Integration with health platforms and EHR systems</li>
+                    <li>Research and wellness applications</li>
+                    <li>MCP servers for AI assistant integrations</li>
+                </ul>
+            </section>
+
+            <hr>
+
+            <!-- Quickstart -->
+            <section id="quickstart">
+                <h2>Quickstart</h2>
+                <p>Get up and running in three steps.</p>
+
+                <h4>1. Register your application</h4>
+                <p>Create an app in the <a href="#" style="color: var(--blue);">Developer Portal</a> to get your client credentials.</p>
+<pre><code><span class="keyword">POST</span> <span class="url">/api/v1/oauth/register</span>
+
+{
+  <span class="string">"name"</span>: <span class="string">"My Health App"</span>,
+  <span class="string">"redirect_uri"</span>: <span class="string">"https://myapp.com/callback"</span>,
+  <span class="string">"scopes"</span>: <span class="string">"heart_rate:read sleep:read steps:read"</span>
+}</code></pre>
+
+                <h4>2. Get user authorization</h4>
+                <p>Redirect users to the Nothing consent screen. They choose exactly which data to share.</p>
+<pre><code><span class="keyword">POST</span> <span class="url">/api/v1/oauth/authorize</span>
+
+{
+  <span class="string">"client_id"</span>: <span class="string">"your_client_id"</span>,
+  <span class="string">"redirect_uri"</span>: <span class="string">"https://myapp.com/callback"</span>,
+  <span class="string">"scope"</span>: <span class="string">"heart_rate:read sleep:read"</span>,
+  <span class="string">"response_type"</span>: <span class="string">"code"</span>
+}</code></pre>
+
+                <h4>3. Exchange code for tokens</h4>
+<pre><code><span class="keyword">POST</span> <span class="url">/api/v1/oauth/token</span>
+
+{
+  <span class="string">"grant_type"</span>: <span class="string">"authorization_code"</span>,
+  <span class="string">"code"</span>: <span class="string">"the_auth_code"</span>,
+  <span class="string">"client_id"</span>: <span class="string">"your_client_id"</span>,
+  <span class="string">"client_secret"</span>: <span class="string">"your_client_secret"</span>,
+  <span class="string">"redirect_uri"</span>: <span class="string">"https://myapp.com/callback"</span>
+}</code></pre>
+
+                <p>You'll receive an access token and refresh token. Use the access token in the <code>Authorization</code> header:</p>
+<pre><code><span class="keyword">GET</span> <span class="url">/api/v1/health/heart_rate</span>
+Authorization: Bearer <span class="string">your_access_token</span></code></pre>
+            </section>
+
+            <hr>
+
+            <!-- Authentication -->
+            <section id="authentication">
+                <h2>Authentication</h2>
+                <p>
+                    The Nothing Health API uses OAuth 2.0 with authorization codes.
+                    Users explicitly consent to share specific data types with your application.
+                </p>
+
+                <h3>Token lifecycle</h3>
+                <table>
+                    <thead>
+                        <tr><th>Token</th><th>Lifetime</th><th>Usage</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>access_token</code></td>
+                            <td>30 minutes</td>
+                            <td>Passed in <code>Authorization: Bearer</code> header</td>
+                        </tr>
+                        <tr>
+                            <td><code>refresh_token</code></td>
+                            <td>90 days</td>
+                            <td>Exchange for a new access token via <code>/oauth/token</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>authorization_code</code></td>
+                            <td>5 minutes</td>
+                            <td>One-time use, exchanged for tokens</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Revoking access</h3>
+                <p>
+                    Users can revoke your app's access at any time from the Nothing X app
+                    with a single tap. You can also programmatically revoke tokens:
+                </p>
+<pre><code><span class="keyword">POST</span> <span class="url">/api/v1/oauth/revoke</span>
+
+{
+  <span class="string">"token"</span>: <span class="string">"the_refresh_token"</span>,
+  <span class="string">"client_id"</span>: <span class="string">"your_client_id"</span>,
+  <span class="string">"client_secret"</span>: <span class="string">"your_client_secret"</span>
+}</code></pre>
+            </section>
+
+            <hr>
+
+            <!-- Heart Rate -->
+            <section id="heart-rate">
+                <h2>Heart Rate</h2>
+                <p>Continuous and on-demand heart rate measurements from the optical sensor.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="badge badge-get">GET</span>
+                        <span class="endpoint-path">/api/v1/health/heart_rate</span>
+                    </div>
+                    <p class="endpoint-desc">Returns heart rate readings for the authenticated user.</p>
+                </div>
+
+                <h4>Query parameters</h4>
+                <table>
+                    <thead>
+                        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>start</code></td><td>ISO 8601</td><td>Filter readings after this time</td></tr>
+                        <tr><td><code>end</code></td><td>ISO 8601</td><td>Filter readings before this time</td></tr>
+                        <tr><td><code>limit</code></td><td>int</td><td>Max results (default 50, max 200)</td></tr>
+                        <tr><td><code>offset</code></td><td>int</td><td>Pagination offset</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>Response</h4>
+<pre><code>{
+  <span class="string">"data"</span>: [
+    {
+      <span class="string">"id"</span>: <span class="string">"abc-123"</span>,
+      <span class="string">"timestamp"</span>: <span class="string">"2026-03-27T08:15:00Z"</span>,
+      <span class="string">"bpm"</span>: 72,
+      <span class="string">"source"</span>: <span class="string">"watch"</span>
+    }
+  ],
+  <span class="string">"has_more"</span>: true,
+  <span class="string">"staleness"</span>: {
+    <span class="string">"last_synced_at"</span>: <span class="string">"2026-03-27T08:00:00Z"</span>,
+    <span class="string">"sync_interval_minutes"</span>: 30
+  }
+}</code></pre>
+
+                <p>Requires scope: <code>heart_rate:read</code></p>
+            </section>
+
+            <hr>
+
+            <!-- Sleep -->
+            <section id="sleep">
+                <h2>Sleep</h2>
+                <p>Nightly sleep sessions with stage breakdowns and sleep quality scoring.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="badge badge-get">GET</span>
+                        <span class="endpoint-path">/api/v1/health/sleep</span>
+                    </div>
+                    <p class="endpoint-desc">Returns sleep records for the authenticated user.</p>
+                </div>
+
+                <h4>Response</h4>
+<pre><code>{
+  <span class="string">"data"</span>: [
+    {
+      <span class="string">"id"</span>: <span class="string">"sleep-456"</span>,
+      <span class="string">"start_time"</span>: <span class="string">"2026-03-26T23:15:00Z"</span>,
+      <span class="string">"end_time"</span>: <span class="string">"2026-03-27T07:00:00Z"</span>,
+      <span class="string">"duration_minutes"</span>: 465,
+      <span class="string">"deep_minutes"</span>: 95,
+      <span class="string">"light_minutes"</span>: 210,
+      <span class="string">"rem_minutes"</span>: 120,
+      <span class="string">"awake_minutes"</span>: 40,
+      <span class="string">"sleep_score"</span>: 82
+    }
+  ],
+  <span class="string">"has_more"</span>: false,
+  <span class="string">"staleness"</span>: { ... }
+}</code></pre>
+
+                <p>Requires scope: <code>sleep:read</code></p>
+            </section>
+
+            <hr>
+
+            <!-- SpO2 -->
+            <section id="spo2">
+                <h2>SpO2</h2>
+                <p>Blood oxygen saturation readings from the pulse oximeter.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="badge badge-get">GET</span>
+                        <span class="endpoint-path">/api/v1/health/spo2</span>
+                    </div>
+                    <p class="endpoint-desc">Returns SpO2 percentage readings.</p>
+                </div>
+
+                <h4>Response</h4>
+<pre><code>{
+  <span class="string">"data"</span>: [
+    {
+      <span class="string">"id"</span>: <span class="string">"spo2-789"</span>,
+      <span class="string">"timestamp"</span>: <span class="string">"2026-03-27T03:30:00Z"</span>,
+      <span class="string">"percentage"</span>: 97.5
+    }
+  ],
+  <span class="string">"has_more"</span>: false,
+  <span class="string">"staleness"</span>: { ... }
+}</code></pre>
+
+                <p>Requires scope: <code>spo2:read</code></p>
+            </section>
+
+            <hr>
+
+            <!-- Steps -->
+            <section id="steps">
+                <h2>Steps</h2>
+                <p>Daily step counts with optional distance and calorie estimates.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="badge badge-get">GET</span>
+                        <span class="endpoint-path">/api/v1/health/steps</span>
+                    </div>
+                    <p class="endpoint-desc">Returns daily step records.</p>
+                </div>
+
+                <h4>Response</h4>
+<pre><code>{
+  <span class="string">"data"</span>: [
+    {
+      <span class="string">"id"</span>: <span class="string">"steps-012"</span>,
+      <span class="string">"date"</span>: <span class="string">"2026-03-27T00:00:00Z"</span>,
+      <span class="string">"count"</span>: 8432,
+      <span class="string">"distance_meters"</span>: 6290.5,
+      <span class="string">"calories"</span>: 312.0
+    }
+  ],
+  <span class="string">"has_more"</span>: true,
+  <span class="string">"staleness"</span>: { ... }
+}</code></pre>
+
+                <p>Requires scope: <code>steps:read</code></p>
+            </section>
+
+            <hr>
+
+            <!-- Workouts -->
+            <section id="workouts">
+                <h2>Workouts</h2>
+                <p>Tracked exercise sessions with heart rate zones, distance, and calories.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="badge badge-get">GET</span>
+                        <span class="endpoint-path">/api/v1/health/workouts</span>
+                    </div>
+                    <p class="endpoint-desc">Returns workout records. Filterable by type.</p>
+                </div>
+
+                <h4>Additional parameters</h4>
+                <table>
+                    <thead>
+                        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>workout_type</code></td><td>string</td><td>Filter by type: <code>running</code>, <code>cycling</code>, <code>swimming</code>, etc.</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>Response</h4>
+<pre><code>{
+  <span class="string">"data"</span>: [
+    {
+      <span class="string">"id"</span>: <span class="string">"workout-345"</span>,
+      <span class="string">"workout_type"</span>: <span class="string">"running"</span>,
+      <span class="string">"start_time"</span>: <span class="string">"2026-03-27T06:30:00Z"</span>,
+      <span class="string">"end_time"</span>: <span class="string">"2026-03-27T07:15:00Z"</span>,
+      <span class="string">"duration_minutes"</span>: 45,
+      <span class="string">"calories"</span>: 520.0,
+      <span class="string">"avg_heart_rate"</span>: 155,
+      <span class="string">"max_heart_rate"</span>: 178,
+      <span class="string">"distance_meters"</span>: 7200.0,
+      <span class="string">"summary"</span>: null
+    }
+  ],
+  <span class="string">"has_more"</span>: false,
+  <span class="string">"staleness"</span>: { ... }
+}</code></pre>
+
+                <p>Requires scope: <code>workouts:read</code></p>
+            </section>
+
+            <hr>
+
+            <!-- Profile -->
+            <section id="profile">
+                <h2>Profile</h2>
+                <p>Basic user profile. No PII beyond display name.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="badge badge-get">GET</span>
+                        <span class="endpoint-path">/api/v1/profile/me</span>
+                    </div>
+                    <p class="endpoint-desc">Returns the authenticated user's basic profile.</p>
+                </div>
+
+                <h4>Response</h4>
+<pre><code>{
+  <span class="string">"id"</span>: <span class="string">"user-abc"</span>,
+  <span class="string">"display_name"</span>: <span class="string">"Carl"</span>,
+  <span class="string">"created_at"</span>: <span class="string">"2025-01-15T10:00:00Z"</span>
+}</code></pre>
+
+                <p>Requires scope: <code>profile:read</code></p>
+            </section>
+
+            <hr>
+
+            <!-- Scopes -->
+            <section id="scopes">
+                <h2>Scopes & Permissions</h2>
+                <p>
+                    Users grant access to specific data types when authorizing your app.
+                    Request only the scopes your application needs.
+                </p>
+
+                <div class="scope-grid">
+                    <div class="scope-item">
+                        <div class="scope-name">heart_rate:read</div>
+                        <div class="scope-desc">Heart rate measurements</div>
+                    </div>
+                    <div class="scope-item">
+                        <div class="scope-name">sleep:read</div>
+                        <div class="scope-desc">Sleep sessions and stages</div>
+                    </div>
+                    <div class="scope-item">
+                        <div class="scope-name">spo2:read</div>
+                        <div class="scope-desc">Blood oxygen readings</div>
+                    </div>
+                    <div class="scope-item">
+                        <div class="scope-name">steps:read</div>
+                        <div class="scope-desc">Daily step counts</div>
+                    </div>
+                    <div class="scope-item">
+                        <div class="scope-name">workouts:read</div>
+                        <div class="scope-desc">Exercise sessions</div>
+                    </div>
+                    <div class="scope-item">
+                        <div class="scope-name">profile:read</div>
+                        <div class="scope-desc">Basic user profile</div>
+                    </div>
+                </div>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title">Principle of least privilege</div>
+                    <p>Only request the scopes your app actually uses. Apps requesting unnecessary scopes may be rejected during review.</p>
+                </div>
+            </section>
+
+            <hr>
+
+            <!-- Rate Limits -->
+            <section id="rate-limits">
+                <h2>Rate Limits</h2>
+                <p>Rate limits are applied per application (identified by client ID).</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Window</th><th>Limit</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Per minute</td><td>100 requests</td></tr>
+                        <tr><td>Per day</td><td>10,000 requests</td></tr>
+                    </tbody>
+                </table>
+
+                <p>Rate limit status is returned in response headers:</p>
+<pre><code>X-RateLimit-Limit-Minute: 100
+X-RateLimit-Remaining-Minute: 95
+X-RateLimit-Limit-Day: 10000</code></pre>
+
+                <p>
+                    When rate limited, the API returns <code>429 Too Many Requests</code>
+                    with a <code>Retry-After</code> header.
+                </p>
+            </section>
+
+            <hr>
+
+            <!-- Data Freshness -->
+            <section id="data-freshness">
+                <h2>Data Freshness</h2>
+                <p>
+                    Health data syncs from the watch to Nothing servers via the Nothing X app
+                    in the background. The current sync interval is approximately <strong>30 minutes</strong>.
+                </p>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">Design around sync cadence</div>
+                    <p>
+                        Every health data response includes a <code>staleness</code> object
+                        with <code>last_synced_at</code> and <code>sync_interval_minutes</code>.
+                        Use this to show users when their data was last updated.
+                    </p>
+                </div>
+
+                <p>
+                    Data may be delayed if the user's phone is off, the Nothing X app
+                    is force-closed, or the watch is out of Bluetooth range. Your app
+                    should handle stale data gracefully.
+                </p>
+            </section>
+
+            <hr>
+
+            <!-- App Review -->
+            <section id="app-review">
+                <h2>App Review</h2>
+                <p>
+                    All applications must pass review before accessing production data.
+                    During development, you can use sandbox credentials with test data.
+                </p>
+
+                <h4>Review criteria</h4>
+                <ul style="color: var(--text-secondary); margin: 0 0 24px 20px; font-size: 15px; line-height: 2;">
+                    <li>Clear description of how health data will be used</li>
+                    <li>Privacy policy that covers health data handling</li>
+                    <li>Only requests scopes that the app actually uses</li>
+                    <li>HTTPS redirect URIs only</li>
+                    <li>Does not resell or share raw health data with third parties</li>
+                </ul>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">Timeline</div>
+                    <p>App reviews are typically completed within 5 business days.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Active nav link tracking
+        const links = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('section');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const top = section.offsetTop - 100;
+                if (scrollY >= top) current = section.id;
+            });
+            links.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
