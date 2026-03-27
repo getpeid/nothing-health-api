@@ -7,13 +7,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import get_current_user, ScopeChecker
 from app.models.user import User
-from app.models.health import HeartRate, SleepRecord, SpO2Reading, StepRecord, Workout
+from app.models.health import HeartRate, SleepRecord, SpO2Reading, StepRecord, Workout, SkinTemperature, MenstrualCycle
 from app.schemas.health import (
     HeartRateOut,
     SleepOut,
     SpO2Out,
     StepsOut,
     WorkoutOut,
+    SkinTemperatureOut,
+    MenstrualCycleOut,
     DataStalenessInfo,
 )
 
@@ -192,6 +194,74 @@ async def get_workouts(
 
     return {
         "data": [WorkoutOut.model_validate(r) for r in rows[:limit]],
+        "has_more": has_more,
+        "staleness": DataStalenessInfo(last_synced_at=latest_sync.scalar()),
+    }
+
+
+# -- Skin Temperature --
+
+@router.get("/skin_temperature")
+async def get_skin_temperature(
+    start: datetime | None = Query(None),
+    end: datetime | None = Query(None),
+    limit: int = Query(PAGE_SIZE, le=200),
+    offset: int = Query(0, ge=0),
+    _scope=Depends(ScopeChecker("skin_temperature:read")),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    query = select(SkinTemperature).where(SkinTemperature.user_id == user.id)
+    if start:
+        query = query.where(SkinTemperature.timestamp >= start)
+    if end:
+        query = query.where(SkinTemperature.timestamp <= end)
+    query = query.order_by(SkinTemperature.timestamp.desc()).offset(offset).limit(limit + 1)
+
+    result = await db.execute(query)
+    rows = result.scalars().all()
+    has_more = len(rows) > limit
+
+    latest_sync = await db.execute(
+        select(func.max(SkinTemperature.synced_at)).where(SkinTemperature.user_id == user.id)
+    )
+
+    return {
+        "data": [SkinTemperatureOut.model_validate(r) for r in rows[:limit]],
+        "has_more": has_more,
+        "staleness": DataStalenessInfo(last_synced_at=latest_sync.scalar()),
+    }
+
+
+# -- Menstrual Cycle --
+
+@router.get("/menstrual_cycle")
+async def get_menstrual_cycle(
+    start: datetime | None = Query(None),
+    end: datetime | None = Query(None),
+    limit: int = Query(PAGE_SIZE, le=200),
+    offset: int = Query(0, ge=0),
+    _scope=Depends(ScopeChecker("menstrual_cycle:read")),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    query = select(MenstrualCycle).where(MenstrualCycle.user_id == user.id)
+    if start:
+        query = query.where(MenstrualCycle.cycle_start >= start)
+    if end:
+        query = query.where(MenstrualCycle.cycle_start <= end)
+    query = query.order_by(MenstrualCycle.cycle_start.desc()).offset(offset).limit(limit + 1)
+
+    result = await db.execute(query)
+    rows = result.scalars().all()
+    has_more = len(rows) > limit
+
+    latest_sync = await db.execute(
+        select(func.max(MenstrualCycle.synced_at)).where(MenstrualCycle.user_id == user.id)
+    )
+
+    return {
+        "data": [MenstrualCycleOut.model_validate(r) for r in rows[:limit]],
         "has_more": has_more,
         "staleness": DataStalenessInfo(last_synced_at=latest_sync.scalar()),
     }

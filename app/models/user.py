@@ -24,3 +24,5 @@ class User(Base):
     spo2_readings: Mapped[list["SpO2Reading"]] = relationship(back_populates="user")
     steps: Mapped[list["StepRecord"]] = relationship(back_populates="user")
     workouts: Mapped[list["Workout"]] = relationship(back_populates="user")
+    skin_temperatures: Mapped[list["SkinTemperature"]] = relationship(back_populates="user")
+    menstrual_cycles: Mapped[list["MenstrualCycle"]] = relationship(back_populates="user")

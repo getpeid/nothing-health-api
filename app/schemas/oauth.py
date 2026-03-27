@@ -8,6 +8,8 @@ VALID_SCOPES = [
     "steps:read",
     "workouts:read",
     "profile:read",
+    "skin_temperature:read",
+    "menstrual_cycle:read",
 ]
 
 

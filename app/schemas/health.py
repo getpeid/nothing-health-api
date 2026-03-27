@@ -77,6 +77,35 @@ class PaginatedResponse(BaseModel):
     has_more: bool = False
 
 
+# -- Skin Temperature --
+
+class SkinTemperatureOut(BaseModel):
+    id: str
+    timestamp: datetime
+    temperature_celsius: float
+    deviation: float | None
+
+    model_config = {"from_attributes": True}
+
+
+# -- Menstrual Cycle --
+
+class MenstrualCycleOut(BaseModel):
+    id: str
+    cycle_start: datetime
+    cycle_end: datetime | None
+    cycle_length_days: int | None
+    period_start: datetime
+    period_end: datetime | None
+    period_length_days: int | None
+    predicted_ovulation: datetime | None
+    phase: str | None
+
+    model_config = {"from_attributes": True}
+
+
+# -- Common --
+
 class DataStalenessInfo(BaseModel):
     """Included in responses to indicate data freshness."""
     last_synced_at: datetime | None

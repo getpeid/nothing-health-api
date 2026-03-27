@@ -350,6 +350,8 @@
                     <a href="#spo2" class="nav-link">SpO2</a>
                     <a href="#steps" class="nav-link">Steps</a>
                     <a href="#workouts" class="nav-link">Workouts</a>
+                    <a href="#skin-temperature" class="nav-link">Skin Temperature</a>
+                    <a href="#menstrual-cycle" class="nav-link">Menstrual Cycle</a>
                     <a href="#profile" class="nav-link">Profile</a>
                 </div>
                 <div class="nav-section">
@@ -682,6 +684,85 @@ Authorization: Bearer <span class="string">your_access_token</span></code></pre>
 
             <hr>
 
+            <!-- Skin Temperature -->
+            <section id="skin-temperature">
+                <h2>Skin Temperature</h2>
+                <p>Wrist skin temperature readings with baseline deviation tracking. Useful for illness detection, recovery monitoring, and cycle prediction.</p>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">Coming soon</div>
+                    <p>This endpoint will be available when skin temperature sensing ships in a future firmware update.</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="badge badge-get">GET</span>
+                        <span class="endpoint-path">/api/v1/health/skin_temperature</span>
+                    </div>
+                    <p class="endpoint-desc">Returns skin temperature readings with optional baseline deviation.</p>
+                </div>
+
+                <h4>Response</h4>
+<pre><code>{
+  <span class="string">"data"</span>: [
+    {
+      <span class="string">"id"</span>: <span class="string">"temp-101"</span>,
+      <span class="string">"timestamp"</span>: <span class="string">"2026-03-27T03:00:00Z"</span>,
+      <span class="string">"temperature_celsius"</span>: 36.2,
+      <span class="string">"deviation"</span>: -0.3
+    }
+  ],
+  <span class="string">"has_more"</span>: false,
+  <span class="string">"staleness"</span>: { ... }
+}</code></pre>
+
+                <p>Requires scope: <code>skin_temperature:read</code></p>
+            </section>
+
+            <hr>
+
+            <!-- Menstrual Cycle -->
+            <section id="menstrual-cycle">
+                <h2>Menstrual Cycle</h2>
+                <p>Cycle tracking with period dates, phase detection, and predicted ovulation. Combines user-logged data with sensor signals (skin temperature, heart rate variability).</p>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">Coming soon</div>
+                    <p>This endpoint will be available when women's health features ship in a future app update.</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="badge badge-get">GET</span>
+                        <span class="endpoint-path">/api/v1/health/menstrual_cycle</span>
+                    </div>
+                    <p class="endpoint-desc">Returns menstrual cycle records for the authenticated user.</p>
+                </div>
+
+                <h4>Response</h4>
+<pre><code>{
+  <span class="string">"data"</span>: [
+    {
+      <span class="string">"id"</span>: <span class="string">"cycle-201"</span>,
+      <span class="string">"cycle_start"</span>: <span class="string">"2026-03-01T00:00:00Z"</span>,
+      <span class="string">"cycle_end"</span>: <span class="string">"2026-03-28T00:00:00Z"</span>,
+      <span class="string">"cycle_length_days"</span>: 28,
+      <span class="string">"period_start"</span>: <span class="string">"2026-03-01T00:00:00Z"</span>,
+      <span class="string">"period_end"</span>: <span class="string">"2026-03-05T00:00:00Z"</span>,
+      <span class="string">"period_length_days"</span>: 5,
+      <span class="string">"predicted_ovulation"</span>: <span class="string">"2026-03-14T00:00:00Z"</span>,
+      <span class="string">"phase"</span>: <span class="string">"luteal"</span>
+    }
+  ],
+  <span class="string">"has_more"</span>: false,
+  <span class="string">"staleness"</span>: { ... }
+}</code></pre>
+
+                <p>Requires scope: <code>menstrual_cycle:read</code></p>
+            </section>
+
+            <hr>
+
             <!-- Profile -->
             <section id="profile">
                 <h2>Profile</h2>
@@ -735,6 +816,14 @@ Authorization: Bearer <span class="string">your_access_token</span></code></pre>
                     <div class="scope-item">
                         <div class="scope-name">workouts:read</div>
                         <div class="scope-desc">Exercise sessions</div>
+                    </div>
+                    <div class="scope-item">
+                        <div class="scope-name">skin_temperature:read</div>
+                        <div class="scope-desc">Skin temperature readings</div>
+                    </div>
+                    <div class="scope-item">
+                        <div class="scope-name">menstrual_cycle:read</div>
+                        <div class="scope-desc">Menstrual cycle tracking</div>
                     </div>
                     <div class="scope-item">
                         <div class="scope-name">profile:read</div>

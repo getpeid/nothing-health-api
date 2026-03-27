@@ -91,3 +91,38 @@ class Workout(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="workouts")
+
+
+class SkinTemperature(Base):
+    __tablename__ = "skin_temperatures"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    temperature_celsius: Mapped[float] = mapped_column(Float)
+    deviation: Mapped[float | None] = mapped_column(Float, nullable=True)  # deviation from baseline
+    synced_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    user: Mapped["User"] = relationship(back_populates="skin_temperatures")
+
+
+class MenstrualCycle(Base):
+    __tablename__ = "menstrual_cycles"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), index=True)
+    cycle_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    cycle_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    cycle_length_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    period_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    period_length_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    predicted_ovulation: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    phase: Mapped[str | None] = mapped_column(String(30), nullable=True)  # menstrual, follicular, ovulation, luteal
+    synced_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    user: Mapped["User"] = relationship(back_populates="menstrual_cycles")

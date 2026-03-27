@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nothing Health API — OAuth 2.0 Technical Spec</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --border: #2a2a2a;
+            --text: #e5e5e5;
+            --text-secondary: #999;
+            --green: #4ade80;
+            --blue: #60a5fa;
+            --yellow: #fbbf24;
+            --purple: #a78bfa;
+            --red: #ff4444;
+            --code-bg: #1a1a1a;
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 48px 32px 120px;
+        }
+
+        h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 8px; }
+        h2 { font-size: 24px; font-weight: 600; margin-top: 48px; margin-bottom: 16px; letter-spacing: -0.02em; }
+        h3 { font-size: 18px; font-weight: 600; margin-top: 32px; margin-bottom: 12px; }
+        h4 { font-size: 15px; font-weight: 600; margin-top: 24px; margin-bottom: 8px; }
+
+        .subtitle { font-size: 16px; color: var(--text-secondary); margin-bottom: 40px; }
+
+        p, li { color: var(--text-secondary); font-size: 15px; margin-bottom: 12px; }
+        ul, ol { margin-left: 20px; margin-bottom: 16px; }
+        li { margin-bottom: 6px; }
+
+        code {
+            font-family: var(--mono);
+            font-size: 13px;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 12px 0 24px;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        pre code { background: none; border: none; padding: 0; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 24px;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .flow-diagram {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 32px;
+            margin: 24px 0;
+            font-family: var(--mono);
+            font-size: 14px;
+            line-height: 2.2;
+            color: var(--text);
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .step { color: var(--green); font-weight: 600; }
+        .arrow { color: var(--text-secondary); }
+        .actor { color: var(--blue); }
+        .note { color: var(--yellow); font-style: italic; }
+
+        .callout {
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 16px 0 24px;
+            font-size: 14px;
+        }
+
+        .callout p { margin: 0; font-size: 14px; }
+
+        .callout-info {
+            background: rgba(96, 165, 250, 0.08);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .callout-warning {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .callout-danger {
+            background: rgba(255, 68, 68, 0.08);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+        }
+
+        .callout-title { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: var(--mono);
+        }
+
+        .badge-required { background: rgba(255, 68, 68, 0.15); color: var(--red); }
+        .badge-new { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+        .badge-exists { background: rgba(96, 165, 250, 0.15); color: var(--blue); }
+    </style>
+</head>
+<body>
+    <h1>OAuth 2.0 Specification</h1>
+    <p class="subtitle">Technical spec for Nothing Health API authentication. Prepared for internal alignment — March 2026.</p>
+
+    <!-- Overview -->
+    <h2>What We Need to Build</h2>
+    <p>Nothing doesn't have OAuth today. We need to build it so third-party apps can request permission to access a user's health data — with the user's explicit consent, scoped to specific data types.</p>
+
+    <div class="callout callout-info">
+        <div class="callout-title">Why OAuth 2.0?</div>
+        <p>It's the industry standard (used by Google, Apple Health, WHOOP, Fitbit). Users never share their Nothing password with third-party apps. They just approve specific permissions, and can revoke anytime.</p>
+    </div>
+
+    <h3>What exists vs. what we need</h3>
+    <table>
+        <thead>
+            <tr><th>Component</th><th>Status</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Nothing Account system</td>
+                <td><span class="badge badge-exists">EXISTS</span></td>
+                <td>Users already sign in to Nothing X with email/phone</td>
+            </tr>
+            <tr>
+                <td>Health data on server</td>
+                <td><span class="badge badge-exists">EXISTS</span></td>
+                <td>Watch data syncs to Nothing servers via NTX app</td>
+            </tr>
+            <tr>
+                <td>OAuth authorization server</td>
+                <td><span class="badge badge-new">NEW</span></td>
+                <td>Issues auth codes, manages consent</td>
+            </tr>
+            <tr>
+                <td>Token service</td>
+                <td><span class="badge badge-new">NEW</span></td>
+                <td>Issues/refreshes/revokes JWT tokens</td>
+            </tr>
+            <tr>
+                <td>Consent screen in Nothing X</td>
+                <td><span class="badge badge-new">NEW</span></td>
+                <td>UI where users approve/deny app access</td>
+            </tr>
+            <tr>
+                <td>Developer portal</td>
+                <td><span class="badge badge-new">NEW</span></td>
+                <td>Where devs register apps and get credentials</td>
+            </tr>
+            <tr>
+                <td>App review process</td>
+                <td><span class="badge badge-new">NEW</span></td>
+                <td>Manual review before production access</td>
+            </tr>
+            <tr>
+                <td>Revoke UI in Nothing X</td>
+                <td><span class="badge badge-new">NEW</span></td>
+                <td>Settings page listing connected apps with revoke button</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Flow -->
+    <h2>The OAuth Flow</h2>
+    <p>Standard OAuth 2.0 Authorization Code flow. Here's the step-by-step:</p>
+
+    <div class="flow-diagram"><span class="actor">Developer</span>                    <span class="actor">Nothing X App</span>                  <span class="actor">Nothing Server</span>
+    │                              │                              │
+<span class="step">1.</span>  │── Register app ─────────────────────────────────────────────▶│
+    │◀─ client_id + client_secret ────────────────────────────────│
+    │                              │                              │
+<span class="step">2.</span>  │── Redirect user ────────────▶│                              │
+    │                              │── Show consent screen ──────▶│
+    │                              │   "MyApp wants access to:    │
+    │                              │    ✓ Heart Rate              │
+    │                              │    ✓ Sleep                   │
+    │                              │    ✗ Steps (denied)"         │
+    │                              │                              │
+<span class="step">3.</span>  │                              │◀─ Auth code ─────────────────│
+    │◀─ Redirect with code ────────│                              │
+    │                              │                              │
+<span class="step">4.</span>  │── Exchange code + secret ───────────────────────────────────▶│
+    │◀─ access_token + refresh_token ─────────────────────────────│
+    │                              │                              │
+<span class="step">5.</span>  │── GET /health/heart_rate ───────────────────────────────────▶│
+    │   (with access_token)        │                              │
+    │◀─ Heart rate data ──────────────────────────────────────────│
+    │                              │                              │
+<span class="step">6.</span>  │                              │── User taps "Revoke" ──────▶│
+    │── GET /health/heart_rate ───────────────────────────────────▶│
+    │◀─ 401 Unauthorized ────────────────────────────────────────│</div>
+
+    <hr>
+
+    <!-- Tokens -->
+    <h2>Token Design</h2>
+
+    <h3>Access Token (JWT)</h3>
+    <p>Short-lived, used for API calls. Contains the user ID and granted scopes.</p>
+
+    <pre><code>{
+  "sub": "user-uuid-here",        // Nothing account ID
+  "scopes": [                     // What this token can access
+    "heart_rate:read",
+    "sleep:read"
+  ],
+  "exp": 1711540800,              // Expires in 30 minutes
+  "type": "access",
+  "iss": "nothing-health-api"     // Issued by us
+}</code></pre>
+
+    <table>
+        <thead><tr><th>Property</th><th>Value</th><th>Rationale</th></tr></thead>
+        <tbody>
+            <tr><td>Format</td><td>JWT (HS256)</td><td>Stateless verification, no DB lookup per request</td></tr>
+            <tr><td>Lifetime</td><td>30 minutes</td><td>Short window limits damage if leaked</td></tr>
+            <tr><td>Contains scopes</td><td>Yes</td><td>API can check permissions without DB call</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Refresh Token (JWT)</h3>
+    <p>Long-lived, used only to get new access tokens. Stored in our database for revocation.</p>
+
+    <pre><code>{
+  "sub": "user-uuid-here",
+  "scopes": ["heart_rate:read", "sleep:read"],
+  "exp": 1719316800,              // Expires in 90 days
+  "type": "refresh",
+  "jti": "unique-token-id"        // For revocation tracking
+}</code></pre>
+
+    <table>
+        <thead><tr><th>Property</th><th>Value</th><th>Rationale</th></tr></thead>
+        <tbody>
+            <tr><td>Lifetime</td><td>90 days</td><td>Users don't need to re-authorize frequently</td></tr>
+            <tr><td>Revocable</td><td>Yes (via jti)</td><td>One-tap revoke from Nothing X kills all tokens</td></tr>
+            <tr><td>DB-tracked</td><td>Yes</td><td>We can revoke specific tokens instantly</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Authorization Code</h3>
+    <table>
+        <thead><tr><th>Property</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>Lifetime</td><td>5 minutes</td></tr>
+            <tr><td>One-time use</td><td>Yes — marked as used after exchange</td></tr>
+            <tr><td>Bound to client</td><td>Yes — must match the requesting client_id</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Scopes -->
+    <h2>Permission Scopes</h2>
+    <p>Each scope grants read access to one data type. Users choose which scopes to approve on the consent screen. Apps should request only what they need.</p>
+
+    <table>
+        <thead><tr><th>Scope</th><th>Data Access</th><th>Status</th></tr></thead>
+        <tbody>
+            <tr><td><code>heart_rate:read</code></td><td>Continuous + on-demand HR readings</td><td><span class="badge badge-exists">READY</span></td></tr>
+            <tr><td><code>sleep:read</code></td><td>Sleep sessions, stages, scores</td><td><span class="badge badge-exists">READY</span></td></tr>
+            <tr><td><code>spo2:read</code></td><td>Blood oxygen percentage</td><td><span class="badge badge-exists">READY</span></td></tr>
+            <tr><td><code>steps:read</code></td><td>Daily step count, distance, calories</td><td><span class="badge badge-exists">READY</span></td></tr>
+            <tr><td><code>workouts:read</code></td><td>Exercise sessions with HR zones</td><td><span class="badge badge-exists">READY</span></td></tr>
+            <tr><td><code>profile:read</code></td><td>Display name only — no email/phone</td><td><span class="badge badge-exists">READY</span></td></tr>
+            <tr><td><code>skin_temperature:read</code></td><td>Wrist temp + baseline deviation</td><td><span class="badge badge-new">FUTURE</span></td></tr>
+            <tr><td><code>menstrual_cycle:read</code></td><td>Cycle dates, phases, ovulation</td><td><span class="badge badge-new">FUTURE</span></td></tr>
+        </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+        <div class="callout-title">Sensitive scopes</div>
+        <p><code>menstrual_cycle:read</code> is classified as sensitive health data. Apps requesting this scope will undergo additional review and must demonstrate a clear health/wellness use case.</p>
+    </div>
+
+    <hr>
+
+    <!-- Consent Screen -->
+    <h2>Consent Screen (Nothing X)</h2>
+    <p>When a third-party app requests authorization, the user sees a consent screen inside the Nothing X app. This needs to be built by the NTX app team.</p>
+
+    <h3>Required elements</h3>
+    <ul>
+        <li><strong>App name and icon</strong> — from the developer portal registration</li>
+        <li><strong>Requested permissions</strong> — listed individually with checkboxes (all on by default)</li>
+        <li><strong>Developer name</strong> — who made the app</li>
+        <li><strong>Allow / Deny buttons</strong> — clear, prominent</li>
+        <li><strong>Users can uncheck individual scopes</strong> — they might approve heart rate but deny sleep</li>
+    </ul>
+
+    <h3>Consent screen mockup (text representation)</h3>
+    <pre><code>┌─────────────────────────────────────┐
+│         Nothing Health              │
+│                                     │
+│  "MyFitnessApp" wants to access     │
+│  your health data:                  │
+│                                     │
+│  ☑ Heart Rate                       │
+│  ☑ Sleep                            │
+│  ☐ Blood Oxygen                     │
+│  ☑ Steps                            │
+│                                     │
+│  By "FitnessCo Inc."                │
+│                                     │
+│  This app will be able to read      │
+│  your selected health data.         │
+│  You can revoke access anytime      │
+│  in Settings → Connected Apps.      │
+│                                     │
+│  ┌───────────┐  ┌───────────────┐   │
+│  │   Deny    │  │    Allow      │   │
+│  └───────────┘  └───────────────┘   │
+└─────────────────────────────────────┘</code></pre>
+
+    <hr>
+
+    <!-- Revocation -->
+    <h2>Revocation (One-Tap Revoke)</h2>
+    <p>Users need a simple way to see which apps have access and cut them off instantly.</p>
+
+    <h3>Nothing X Settings Page</h3>
+    <pre><code>┌─────────────────────────────────────┐
+│  Settings → Connected Apps          │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ 🏃 MyFitnessApp             │    │
+│  │ Access: HR, Sleep, Steps    │    │
+│  │ Connected: Mar 15, 2026     │    │
+│  │              [Revoke]       │    │
+│  └─────────────────────────────┘    │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ 🧠 AI Health Coach          │    │
+│  │ Access: HR, SpO2, Workouts  │    │
+│  │ Connected: Mar 20, 2026     │    │
+│  │              [Revoke]       │    │
+│  └─────────────────────────────┘    │
+└─────────────────────────────────────┘</code></pre>
+
+    <h3>What happens on revoke</h3>
+    <ol>
+        <li>All refresh tokens for that app + user are marked as revoked in the database</li>
+        <li>Existing access tokens expire naturally within 30 minutes (JWT — can't revoke instantly)</li>
+        <li>App gets <code>401 Unauthorized</code> on next token refresh attempt</li>
+        <li>User sees confirmation: "Access revoked for MyFitnessApp"</li>
+    </ol>
+
+    <hr>
+
+    <!-- Security -->
+    <h2>Security Requirements</h2>
+
+    <table>
+        <thead><tr><th>Requirement</th><th>Implementation</th></tr></thead>
+        <tbody>
+            <tr><td>TLS everywhere</td><td>All API endpoints HTTPS only. No HTTP.</td></tr>
+            <tr><td>Client secrets hashed</td><td>bcrypt — never stored in plaintext</td></tr>
+            <tr><td>Auth codes single-use</td><td>Marked as used after first exchange</td></tr>
+            <tr><td>PKCE support</td><td>Recommended for mobile/SPA apps (Phase 2)</td></tr>
+            <tr><td>Rate limiting on auth endpoints</td><td>Prevents brute-force token guessing</td></tr>
+            <tr><td>Redirect URI validation</td><td>Must exactly match registered URI</td></tr>
+            <tr><td>No wildcard redirect URIs</td><td>Prevents open redirect attacks</td></tr>
+            <tr><td>Token rotation</td><td>Old refresh token invalidated when new one is issued (Phase 2)</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- API Endpoints -->
+    <h2>OAuth API Endpoints</h2>
+    <p>All under <code>/api/v1/oauth/</code>.</p>
+
+    <h3>POST /register</h3>
+    <p>Developer registers their app. Returns client credentials.</p>
+    <pre><code>Request:
+{
+  "name": "My Health App",
+  "redirect_uri": "https://myapp.com/callback",
+  "scopes": "heart_rate:read sleep:read steps:read"
+}
+
+Response:
+{
+  "client_id": "nth_abc123...",
+  "client_secret": "nths_xyz789...",     ← show once, never again
+  "name": "My Health App",
+  "scopes": "heart_rate:read sleep:read steps:read"
+}</code></pre>
+
+    <h3>POST /authorize</h3>
+    <p>Initiates consent flow. In production, this triggers the Nothing X consent screen.</p>
+    <pre><code>Request:
+{
+  "client_id": "nth_abc123...",
+  "redirect_uri": "https://myapp.com/callback",
+  "scope": "heart_rate:read sleep:read",
+  "state": "random-csrf-token",
+  "response_type": "code"
+}
+
+Response (redirect to):
+https://myapp.com/callback?code=AUTH_CODE_HERE&state=random-csrf-token</code></pre>
+
+    <h3>POST /token</h3>
+    <p>Exchange auth code or refresh token for access + refresh tokens.</p>
+    <pre><code>Request (authorization code):
+{
+  "grant_type": "authorization_code",
+  "code": "AUTH_CODE_HERE",
+  "client_id": "nth_abc123...",
+  "client_secret": "nths_xyz789...",
+  "redirect_uri": "https://myapp.com/callback"
+}
+
+Request (refresh):
+{
+  "grant_type": "refresh_token",
+  "refresh_token": "REFRESH_TOKEN_HERE",
+  "client_id": "nth_abc123...",
+  "client_secret": "nths_xyz789..."
+}
+
+Response:
+{
+  "access_token": "eyJ...",
+  "refresh_token": "eyJ...",
+  "token_type": "Bearer",
+  "expires_in": 1800,
+  "scope": "heart_rate:read sleep:read"
+}</code></pre>
+
+    <h3>POST /revoke</h3>
+    <p>Revoke a refresh token. Called from Nothing X or programmatically.</p>
+    <pre><code>Request:
+{
+  "token": "REFRESH_TOKEN_HERE",
+  "client_id": "nth_abc123...",
+  "client_secret": "nths_xyz789..."
+}
+
+Response:
+{ "status": "revoked" }</code></pre>
+
+    <hr>
+
+    <!-- Dependencies -->
+    <h2>What We Need From Each Team</h2>
+
+    <h3>Nothing X App Team (Charlie Cai)</h3>
+    <ul>
+        <li>Consent screen UI inside Nothing X</li>
+        <li>Connected Apps settings page with revoke buttons</li>
+        <li>Deep link handling for OAuth redirect flow</li>
+        <li>WebView or custom tab for authorization URL</li>
+    </ul>
+
+    <h3>Nothing Server Team</h3>
+    <ul>
+        <li>OAuth authorization server (or extend existing auth)</li>
+        <li>Health data API endpoints (we have the spec ready)</li>
+        <li>Token storage (PostgreSQL — refresh tokens + auth codes)</li>
+        <li>Integration with existing Nothing Account system</li>
+    </ul>
+
+    <h3>Firmware Team</h3>
+    <ul>
+        <li>No changes needed for Phase 1 — data already syncs to server</li>
+        <li>Battery impact assessment for 30-min sync interval</li>
+        <li>Future: skin temperature sensor data pipeline</li>
+    </ul>
+
+    <hr>
+
+    <!-- Timeline -->
+    <h2>Suggested Phases</h2>
+
+    <table>
+        <thead><tr><th>Phase</th><th>What</th><th>Depends On</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><strong>Phase 1</strong></td>
+                <td>OAuth server + 5 health endpoints (HR, sleep, SpO2, steps, workouts) + developer portal</td>
+                <td>Server team + NTX app (consent screen)</td>
+            </tr>
+            <tr>
+                <td><strong>Phase 2</strong></td>
+                <td>PKCE support, token rotation, webhook notifications for new data</td>
+                <td>Phase 1 complete</td>
+            </tr>
+            <tr>
+                <td><strong>Phase 3</strong></td>
+                <td>Skin temperature + menstrual cycle endpoints</td>
+                <td>Firmware + app features shipping</td>
+            </tr>
+            <tr>
+                <td><strong>Phase 4</strong></td>
+                <td>Subscription tier with higher rate limits, real-time streaming</td>
+                <td>Business model finalized</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
